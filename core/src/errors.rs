@@ -40,7 +40,7 @@ pub struct BaseEngineError {
 
 impl BaseEngineError {
     
-    pub fn new(message: String, error_code: String) -> Self {
+    pub fn new(message: Into<String>, error_code: Into<String>) -> Self {
         
         BaseEngineError { message, error_code}
 
