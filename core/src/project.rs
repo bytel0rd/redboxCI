@@ -1,3 +1,5 @@
+use std::rc::Rc;
+
 use uuid::Uuid;
 
 use crate::source_control::SourceControlCFG;
@@ -29,9 +31,9 @@ impl Project {
 
     }
 
-    pub fn get_name(&self) -> String {
+    pub fn get_name(&self) -> &String {
 
-        self.name.clone()
+       &self.name
 
     }
 
@@ -65,9 +67,9 @@ impl Project {
 
     }
 
-    pub fn get_id(&self) -> String {
+    pub fn get_id(&self) -> &String {
 
-        return self.id.clone();
+        return &self.id;
 
     }
 

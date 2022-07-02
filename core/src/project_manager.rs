@@ -24,7 +24,7 @@ impl ProjectManager {
 
     pub fn create_project <SourceConfigType> (&self, project: Project) -> Result<Project, ProjectError> {
 
-        let savedProject =  self.store.retrieve(project.get_id());
+        let savedProject =  self.store.retrieve(project.get_id().to_string());
 
         if (savedProject.is_err()) {
 
@@ -94,7 +94,7 @@ impl ProjectManager {
 
     pub fn update_project (&self, project: Project) -> Result<Project, ProjectError> {
 
-        self.retrieve_project(project.get_id())?;
+        self.retrieve_project(project.get_id().into())?;
 
         match self.store.update(project) {
 

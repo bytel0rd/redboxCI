@@ -28,9 +28,9 @@ impl ProjectWorkspace {
 
     }
 
-    pub fn get_id(&self) -> String {    
+    pub fn get_id(&self) -> &String {    
 
-        return self.id.clone();
+        &self.id
 
     }
 
@@ -42,9 +42,9 @@ impl ProjectWorkspace {
 
     }
 
-    pub fn get_project_id(&self) -> String {
+    pub fn get_project_id(&self) -> &String {
 
-        return self.project_id.clone();
+        &self.project_id
 
     }
 
