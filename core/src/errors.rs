@@ -40,12 +40,19 @@ pub struct BaseEngineError {
 
 impl BaseEngineError {
     
-    pub fn new(message: Into<String>, error_code: Into<String>) -> Self {
+    pub fn new<T: Into<String>>(message: T, error_code: T) -> Self {
+        
+        BaseEngineError { message: message.into(), error_code: error_code.into()}
+
+    }
+
+    pub fn from(message: String, error_code: String) -> Self {
         
         BaseEngineError { message, error_code}
 
     }
 
+    
 }
 
 

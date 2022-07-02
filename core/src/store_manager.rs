@@ -56,11 +56,13 @@ impl  <DataType, PrimaryKeyType> AddToStore<DataType, PrimaryKeyType> for StoreM
     
     fn add(&self,update:DataType) -> Result<DataType, Box<dyn errors::EngineError>> {
         
-        match self.add {
+        match &self.add {
             
             None => {
                 
-               Err(errors::BaseEngineError::new("add functionality not configured for data type on store manager", "RBX_PSM_001"))
+                let error = errors::BaseEngineError::new("add functionality not configured for data type on store manager", "RBX_PSM_001");
+
+               Err(Box::new(error))
 
             },
 
@@ -78,11 +80,13 @@ impl  <DataType, PrimaryKeyType> UpdateInStore<DataType, PrimaryKeyType> for Sto
     
     fn update(&self,update:DataType) -> Result<DataType, Box<dyn errors::EngineError>> {
         
-        match self.update {
+        match &self.update {
             
             None => {
                 
-               Err(errors::BaseEngineError::new("update functionality not configured for data type on store manager", "RBX_PSM_002"))
+               let error = errors::BaseEngineError::new("update functionality not configured for data type on store manager", "RBX_PSM_002");
+
+               Err(Box::new(error))
 
             },
 
@@ -101,11 +105,13 @@ impl  <DataType, PrimaryKeyType> RetrieveFromStore<DataType, PrimaryKeyType> for
 
     fn retrieve(&self,id:PrimaryKeyType) -> Result<Option<DataType>,Box<dyn errors::EngineError>> {
         
-        match self.retrieve {
+        match &self.retrieve {
             
             None => {
                 
-               Err(errors::BaseEngineError::new("retrieve by primary key not configured for data type on store manager", "RBX_PSM_003"))
+                let error = errors::BaseEngineError::new("retrieve by primary key not configured for data type on store manager", "RBX_PSM_003");
+
+               Err(Box::new(error))
 
             },
 
@@ -124,11 +130,13 @@ impl  <DataType, PrimaryKeyType> RemoveFromStore<PrimaryKeyType> for StoreManger
 
     fn delete(&self,key: &PrimaryKeyType) -> Result<bool,Box<dyn errors::EngineError>> {
         
-        match self.delete {
+        match &self.delete {
             
             None => {
                 
-               Err(errors::BaseEngineError::new("delete functionality not configured for data type on store manager", "RBX_PSM_004"))
+               let error = errors::BaseEngineError::new("delete functionality not configured for data type on store manager", "RBX_PSM_004");
+
+               Err(Box::new(error))
 
             },
 

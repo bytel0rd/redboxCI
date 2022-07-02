@@ -1,7 +1,10 @@
-use crate::{project::Project, persistence::PermanentStore, errors::BaseEngineError};
+use super::store_manager::StoreManger;
+use super::errors::BaseEngineError;
+use super::project::Project;
+use super::persistence::{AddToStore, RetrieveFromStore, UpdateInStore, RemoveFromStore};
+
+
 use log::{debug, error, info, trace, warn};
-
-
 pub enum ProjectError {
     
     PersistenceError(BaseEngineError),
@@ -15,7 +18,7 @@ pub enum ProjectError {
 
 pub struct ProjectManager {
 
-    store: Box<dyn PermanentStore<Project, String>>
+    store: StoreManger<Project, String>
 
 }
 
@@ -26,12 +29,14 @@ impl ProjectManager {
 
         let savedProject =  self.store.retrieve(project.get_id().to_string());
 
-        if (savedProject.is_err()) {
+        if let Err(store_error) = savedProject {
 
-            let error = BaseEngineError::new(savedProject.unwrap_err().get_message().to_string(), "RBX_CPE_0001".to_string());
-
+            error!("retrieve project store error {:?}", &store_error);
+        
+            let error = BaseEngineError::new(store_error.get_message().to_string(), "RBX_CPE_0001".to_string());
+    
             return Err(ProjectError::PersistenceError(error));
-
+        
         }
 
         if (savedProject.unwrap().is_some()) {
@@ -42,7 +47,7 @@ impl ProjectManager {
 
         }
 
-        match self.store.create(project) {
+        match self.store.add(project) {
 
             Ok(project) => {
 
@@ -51,6 +56,8 @@ impl ProjectManager {
             },
 
             Err(error) => {
+
+                error!("app project store error {:?}", error);
 
                 let error = BaseEngineError::new(format!("Error occurred while creating project"), "RBX_CPE_0003_F".to_string());
 
@@ -68,10 +75,10 @@ impl ProjectManager {
 
         let saved_project =  self.store.retrieve(project_id.clone());
 
-        if (saved_project.is_err()) {
+        if let Err(store_error) = saved_project {
 
-            let error = BaseEngineError::new(saved_project.unwrap_err().get_message().to_string(), "RBX_CPE_0001".to_string());
-
+            let error = BaseEngineError::new(store_error.get_message().to_string(), "RBX_CPE_0001".to_string());
+    
             return Err(ProjectError::PersistenceError(error));
 
         }
@@ -120,3 +127,4 @@ impl ProjectManager {
     }
 
 }
+
