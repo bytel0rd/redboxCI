@@ -146,6 +146,42 @@ impl <'store> ProjectManager<'store> {
 
     }
 
+
+    pub fn delete_project (&self, project_id: String) -> Result<(), ProjectError> {
+
+        trace!("deleting project {}", project_id);
+
+        match self.store.delete(&project_id) {
+            
+            Ok(isDeleted) => {
+
+                if (!isDeleted) {
+
+                    let message = format!("unable to delete project: {:?}", project_id);
+
+                    let error = BaseEngineError::new(message.to_string(), "RBX_CPE_0001".to_string());
+    
+                    return Err(ProjectError::PersistenceError(error));
+
+                }
+
+                Ok(())
+
+            },
+
+            Err(store_error) => {
+
+                let error = BaseEngineError::new(store_error.get_message().to_string(), "RBX_CPE_0001".to_string());
+    
+                return Err(ProjectError::PersistenceError(error));
+
+            }
+
+        }
+
+      
+    }
+
 }
 
 
@@ -341,6 +377,68 @@ mod test {
 
     }
 
+    #[test]
+    fn should_throw_error_deleting_project() {
 
+        let mut store: StoreManger<Project, String> = StoreManger::new();
+
+        let mut delete_operator_mock: MockRemoveFromStore<String> = MockRemoveFromStore::new();
+
+        delete_operator_mock.expect_delete().return_once(|key| Ok(false));
+
+        store.set_delete_operator(Box::new(delete_operator_mock));
+
+        let project_manager = ProjectManager::new(&store);
+
+        match project_manager.delete_project("random-project-id".to_string()) {
+            
+            Ok(_) => {
+
+                panic!("it should have thrown error");
+
+            },
+
+            Err(err) => {
+
+                info!("Expected error received {:?}", err);
+
+            }
+
+        }
+
+
+    }
+
+    #[test]
+    fn should_delete_project() {
+
+        let mut store: StoreManger<Project, String> = StoreManger::new();
+
+        let mut delete_operator_mock: MockRemoveFromStore<String> = MockRemoveFromStore::new();
+
+        delete_operator_mock.expect_delete().return_once(|key| Ok(true));
+
+        store.set_delete_operator(Box::new(delete_operator_mock));
+
+        let project_manager = ProjectManager::new(&store);
+
+        match project_manager.delete_project("random-project-id".to_string()) {
+            
+            Ok(project) => {
+
+                info!("successfully deleted project");
+
+            },
+
+            Err(err) => {
+
+                panic!("unexpected error type provided: {:?}", err);
+
+            }
+
+        }
+
+
+    }
 
 }
