@@ -7,13 +7,13 @@ use crate::source_control::SourceControlCFG;
 #[derive(Debug)]
 pub struct Project {
 
-    name: String,
+    pub(crate) name: String,
 
-    source_control: Option<Box<dyn SourceControlCFG>>,
+    pub(crate) source_control: Option<Box<dyn SourceControlCFG>>,
 
-    pipeline: Vec<String>,
+    pub(crate) pipeline: Vec<String>,
 
-    id: String
+    pub(crate) id: String
 
 }
 

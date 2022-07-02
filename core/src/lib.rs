@@ -13,6 +13,8 @@ mod errors;
 
 mod project_manager;
 
+mod store_manager;
+
 // project information
 // workspace configuration
 // pipeline execution
