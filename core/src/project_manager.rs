@@ -4,7 +4,9 @@ use super::project::Project;
 use super::persistence::{AddToStore, RetrieveFromStore, UpdateInStore, RemoveFromStore};
 
 
-use log::{debug, error, info, trace, warn};
+use log::{debug, error, trace};
+
+#[derive(Debug)]
 pub enum ProjectError {
     
     PersistenceError(BaseEngineError),
@@ -16,16 +18,24 @@ pub enum ProjectError {
 }
 
 
-pub struct ProjectManager {
+pub struct ProjectManager<'store> {
 
-    store: StoreManger<Project, String>
+    store: &'store StoreManger<Project, String>
 
 }
 
 
-impl ProjectManager {
+impl <'store> ProjectManager<'store> {
 
-    pub fn create_project <SourceConfigType> (&self, project: Project) -> Result<Project, ProjectError> {
+    pub fn new(store: &'store StoreManger<Project, String>) -> Self {
+
+        ProjectManager { store }
+        
+    }
+
+    pub fn create_project (&self, project: Project) -> Result<Project, ProjectError> {
+
+        trace!("creating project {}", project.get_id());
 
         let savedProject =  self.store.retrieve(project.get_id().to_string());
 
@@ -51,6 +61,8 @@ impl ProjectManager {
 
             Ok(project) => {
 
+               debug!("Successfully created project {:?}", project);
+
                return Ok(project)
 
             },
@@ -73,9 +85,13 @@ impl ProjectManager {
 
     pub fn retrieve_project (&self, project_id: String) -> Result<Project, ProjectError> {
 
+        trace!("retrieving project {}", project_id);
+
         let saved_project =  self.store.retrieve(project_id.clone());
 
         if let Err(store_error) = saved_project {
+
+            error!("store error: {:?}", store_error);
 
             let error = BaseEngineError::new(store_error.get_message().to_string(), "RBX_CPE_0001".to_string());
     
@@ -101,11 +117,15 @@ impl ProjectManager {
 
     pub fn update_project (&self, project: Project) -> Result<Project, ProjectError> {
 
+        trace!("updating project {}", project.get_id());
+
         self.retrieve_project(project.get_id().into())?;
 
         match self.store.update(project) {
 
             Ok(project) => {
+
+                debug!("successfully created project {:?}", project);
 
                return Ok(project)
 
@@ -113,7 +133,7 @@ impl ProjectManager {
 
             Err(error) => {
 
-                // error!
+                error!("update project error {:?}", error);
 
                 let error = BaseEngineError::new(format!("Error occurred while updating project information"), "RBX_CPE_0003_F".to_string());
 
@@ -128,3 +148,199 @@ impl ProjectManager {
 
 }
 
+
+#[cfg(test)]
+mod test {
+
+    use crate::project_manager::ProjectError;
+
+    use super::super::persistence::*;
+    use super::super::store_manager::*;
+    use super::super::project::*;
+    use super::ProjectManager;
+    
+    use log::{info, error};
+
+    #[test]
+    fn should_throw_duplicate_project_error() {
+
+        let mut store: StoreManger<Project, String> = StoreManger::new();
+
+        let mut retrieve_operator_mock: MockRetrieveFromStore<Project, String> = MockRetrieveFromStore::new();
+
+        retrieve_operator_mock.expect_retrieve().return_once(|key| Ok(Some(Project::new("a".to_string()))));
+
+        store.set_retrieve_operator(Box::new(retrieve_operator_mock));
+
+        let project_manager = ProjectManager::new(&store);
+
+        match project_manager.create_project(Project::new("test".to_string())) {
+            
+            Ok(v) => panic!("{:?}", v),
+
+            Err(err) => {
+
+                if let ProjectError::DuplicateError(error_value) = &err {
+                    
+                    info!("expected error {:?} ", error_value);
+
+                    return ;
+                }
+
+                panic!("unexpected error type provided: {:?}", err);
+
+            }
+
+        }
+
+
+    }
+
+    #[test]
+    fn should_create_project() {
+
+        let mut store: StoreManger<Project, String> = StoreManger::new();
+
+        let mut retrieve_operator_mock: MockRetrieveFromStore<Project, String> = MockRetrieveFromStore::new();
+
+        retrieve_operator_mock.expect_retrieve().return_once(|key| Ok(None));
+
+        store.set_retrieve_operator(Box::new(retrieve_operator_mock));
+
+        let mut create_operator: MockAddToStore<Project, String> = MockAddToStore::new();
+
+        create_operator.expect_add().return_once(|project| Ok(project));
+
+        store.set_add_operator(Box::new(create_operator));
+
+        let project_manager = ProjectManager::new(&store);
+
+        match project_manager.create_project(Project::new("test".to_string())) {
+            
+            Ok(project) => {
+
+                info!("created project {:?} ", project);
+
+            },
+
+            Err(err) => {
+
+                panic!("unexpected error: {:?}", err);
+
+            }
+
+        }
+
+
+    }
+
+
+    #[test]
+    fn should_throw_project_not_found() {
+
+        let mut store: StoreManger<Project, String> = StoreManger::new();
+
+        let mut retrieve_operator_mock: MockRetrieveFromStore<Project, String> = MockRetrieveFromStore::new();
+
+        retrieve_operator_mock.expect_retrieve().return_once(|key| Ok(None));
+
+        store.set_retrieve_operator(Box::new(retrieve_operator_mock));
+
+        let project_manager = ProjectManager::new(&store);
+
+        match project_manager.retrieve_project("random-project-id".to_string()) {
+            
+            Ok(v) => panic!("{:?}", v),
+
+            Err(err) => {
+
+                if let ProjectError::NotFoundError(error_value) = &err {
+                    
+                    info!("expected error {:?} ", error_value);
+
+                    return ;
+                }
+
+                panic!("unexpected error type provided: {:?}", err);
+
+            }
+
+        }
+
+
+    }
+
+    #[test]
+    fn should_retrieve_project() {
+
+        let mut store: StoreManger<Project, String> = StoreManger::new();
+
+        let mut retrieve_operator_mock: MockRetrieveFromStore<Project, String> = MockRetrieveFromStore::new();
+
+        retrieve_operator_mock.expect_retrieve().return_once(|key| Ok(Some(Project::new("a".to_string()))));
+
+        store.set_retrieve_operator(Box::new(retrieve_operator_mock));
+
+        let project_manager = ProjectManager::new(&store);
+
+        match project_manager.retrieve_project("random-project-id".to_string()) {
+            
+            Ok(project) => {
+
+                info!("retreved project {:?} ", project);
+
+            },
+
+            Err(err) => {
+
+                panic!("unexpected error type provided: {:?}", err);
+
+            }
+
+        }
+
+
+    }
+
+
+    #[test]
+    fn should_update_project() {
+
+        let mut store: StoreManger<Project, String> = StoreManger::new();
+
+        let mut retrieve_operator_mock: MockRetrieveFromStore<Project, String> = MockRetrieveFromStore::new();
+
+        retrieve_operator_mock.expect_retrieve().return_once(|key| Ok(Some(Project::new("name".to_string()))));
+
+        store.set_retrieve_operator(Box::new(retrieve_operator_mock));
+
+        let mut update_operator: MockUpdateInStore<Project, String> = MockUpdateInStore::new();
+
+        update_operator.expect_update().return_once(|project| Ok(project));
+
+        store.set_update_operator(Box::new(update_operator));
+
+        let project_manager = ProjectManager::new(&store);
+
+        match project_manager.update_project(Project::new("test".to_string())) {
+            
+            Ok(project) => {
+
+                info!("updated project {:?} ", project);
+
+            },
+
+            Err(err) => {
+
+                panic!("unexpected error: {:?}", err);
+
+            }
+
+        }
+
+
+    }
+
+
+
+}

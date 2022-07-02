@@ -1,6 +1,4 @@
-use std::ops::Add;
-
-use super::persistence::{AddToStore, UpdateInStore, RetrieveFromStore, RemoveFromStore};
+use super::persistence::*;
 use super::errors;
 
 
