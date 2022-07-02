@@ -6,7 +6,7 @@ use mockall::{automock, mock, predicate::*};
 #[cfg_attr(test, automock)]
 pub trait AddToStore<DataType, PrimaryKeyType> {
 
-    fn update(&self, update: DataType ) -> Result<DataType, Box<dyn EngineError>>;    
+    fn add(&self, update: DataType ) -> Result<DataType, Box<dyn EngineError>>;    
 
 }
 
