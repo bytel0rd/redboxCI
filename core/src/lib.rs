@@ -15,6 +15,8 @@ mod project_manager;
 
 mod store_manager;
 
+mod workspace_manager;
+
 // project information
 // workspace configuration
 // pipeline execution

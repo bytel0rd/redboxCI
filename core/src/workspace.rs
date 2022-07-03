@@ -1,6 +1,5 @@
-pub struct ProjectWorkspace {
-
-    id: String,
+#[derive(Debug)]
+pub struct Workspace {
 
     project_id: String,
 
@@ -10,33 +9,18 @@ pub struct ProjectWorkspace {
 
 }
 
-impl ProjectWorkspace {
+impl Workspace {
     
 
-    pub fn new(id: String, project_id: String) -> Self {
+    pub fn new(project_id: String) -> Self {
 
-        ProjectWorkspace { id, project_id, last_build_version: 0, project_dir: None }
-
-    }
-
-
-    pub fn set_id(mut self, id: String) -> Self {
-
-        self.id = id;
-
-        return self;
-
-    }
-
-    pub fn get_id(&self) -> &String {    
-
-        &self.id
+        Workspace { project_id, last_build_version: 0, project_dir: None }
 
     }
 
     pub fn set_project_id(mut self, project_id: String) -> Self {
 
-        self.id = project_id;
+        self.project_id = project_id;
 
         return self;
 
