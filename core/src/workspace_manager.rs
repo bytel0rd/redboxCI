@@ -33,13 +33,13 @@ impl <'store> WorkspaceManager<'store> {
         
     }
 
-    pub fn create_Workspace (&self, workspace: Workspace) -> Result<Workspace, WorkspaceError> {
+    pub fn create_workspace (&self, workspace: Workspace) -> Result<Workspace, WorkspaceError> {
 
         trace!("creating Workspace {}", workspace.get_project_id());
 
-        let savedWorkspace =  self.store.retrieve(workspace.get_project_id().to_string());
+        let saved_workspace =  self.store.retrieve(workspace.get_project_id().to_string());
 
-        if let Err(store_error) = savedWorkspace {
+        if let Err(store_error) = saved_workspace {
 
             error!("retrieve Workspace store error {:?}", &store_error);
         
@@ -49,7 +49,7 @@ impl <'store> WorkspaceManager<'store> {
         
         }
 
-        if (savedWorkspace.unwrap().is_some()) {
+        if saved_workspace.unwrap().is_some() {
 
             let error = BaseEngineError::new(format!("Workspace with Id: {} already exist", workspace.get_project_id()), "RBX_CPE_0002".to_string());
 
@@ -83,7 +83,7 @@ impl <'store> WorkspaceManager<'store> {
     }
 
 
-    pub fn retrieve_Workspace (&self, workspace_id: String) -> Result<Workspace, WorkspaceError> {
+    pub fn retrieve_workspace (&self, workspace_id: String) -> Result<Workspace, WorkspaceError> {
 
         trace!("retrieving Workspace {}", workspace_id);
 
@@ -115,11 +115,11 @@ impl <'store> WorkspaceManager<'store> {
 
     }
 
-    pub fn update_Workspace (&self, workspace: Workspace) -> Result<Workspace, WorkspaceError> {
+    pub fn update_workspace (&self, workspace: Workspace) -> Result<Workspace, WorkspaceError> {
 
         trace!("updating Workspace {}", workspace.get_project_id());
 
-        self.retrieve_Workspace(workspace.get_project_id().into())?;
+        self.retrieve_workspace(workspace.get_project_id().into())?;
 
         match self.store.update(workspace) {
 
@@ -147,15 +147,15 @@ impl <'store> WorkspaceManager<'store> {
     }
 
 
-    pub fn delete_Workspace (&self, workspace_id: String) -> Result<(), WorkspaceError> {
+    pub fn delete_workspace (&self, workspace_id: String) -> Result<(), WorkspaceError> {
 
         trace!("deleting Workspace {}", workspace_id);
 
         match self.store.delete(&workspace_id) {
             
-            Ok(isDeleted) => {
+            Ok(is_deleted) => {
 
-                if (!isDeleted) {
+                if !is_deleted {
 
                     let message = format!("unable to delete Workspace: {:?}", workspace_id);
 
@@ -193,22 +193,22 @@ mod test {
     use super::super::workspace::*;
     use super::*;
     
-    use log::{info, error};
+    use log::{info};
 
     #[test]
-    fn should_throw_duplicate_Workspace_error() {
+    fn should_throw_duplicate_workspace_error() {
 
         let mut store: StoreManger<Workspace, String> = StoreManger::new();
 
         let mut retrieve_operator_mock: MockRetrieveFromStore<Workspace, String> = MockRetrieveFromStore::new();
 
-        retrieve_operator_mock.expect_retrieve().return_once(|key| Ok(Some(Workspace::new("project_id".to_string()))));
+        retrieve_operator_mock.expect_retrieve().return_once(|_| Ok(Some(Workspace::new("project_id".to_string()))));
 
         store.set_retrieve_operator(Box::new(retrieve_operator_mock));
 
-        let Workspace_manager = WorkspaceManager::new(&store);
+        let workspace_manager = WorkspaceManager::new(&store);
 
-        match Workspace_manager.create_Workspace(Workspace::new("test".to_string())) {
+        match workspace_manager.create_workspace(Workspace::new("test".to_string())) {
             
             Ok(v) => panic!("{:?}", v),
 
@@ -231,29 +231,29 @@ mod test {
     }
 
     #[test]
-    fn should_create_Workspace() {
+    fn should_create_workspace() {
 
         let mut store: StoreManger<Workspace, String> = StoreManger::new();
 
         let mut retrieve_operator_mock: MockRetrieveFromStore<Workspace, String> = MockRetrieveFromStore::new();
 
-        retrieve_operator_mock.expect_retrieve().return_once(|key| Ok(None));
+        retrieve_operator_mock.expect_retrieve().return_once(|_| Ok(None));
 
         store.set_retrieve_operator(Box::new(retrieve_operator_mock));
 
         let mut create_operator: MockAddToStore<Workspace, String> = MockAddToStore::new();
 
-        create_operator.expect_add().return_once(|Workspace| Ok(Workspace));
+        create_operator.expect_add().return_once(|workspace| Ok(workspace));
 
         store.set_add_operator(Box::new(create_operator));
 
-        let Workspace_manager = WorkspaceManager::new(&store);
+        let workspace_manager = WorkspaceManager::new(&store);
 
-        match Workspace_manager.create_Workspace(Workspace::new("test".to_string())) {
+        match workspace_manager.create_workspace(Workspace::new("test".to_string())) {
             
-            Ok(Workspace) => {
+            Ok(workspace) => {
 
-                info!("created Workspace {:?} ", Workspace);
+                info!("created Workspace {:?} ", workspace);
 
             },
 
@@ -270,19 +270,19 @@ mod test {
 
 
     #[test]
-    fn should_throw_Workspace_not_found() {
+    fn should_throw_workspace_not_found() {
 
         let mut store: StoreManger<Workspace, String> = StoreManger::new();
 
         let mut retrieve_operator_mock: MockRetrieveFromStore<Workspace, String> = MockRetrieveFromStore::new();
 
-        retrieve_operator_mock.expect_retrieve().return_once(|key| Ok(None));
+        retrieve_operator_mock.expect_retrieve().return_once(|_| Ok(None));
 
         store.set_retrieve_operator(Box::new(retrieve_operator_mock));
 
-        let Workspace_manager = WorkspaceManager::new(&store);
+        let workspace_manager = WorkspaceManager::new(&store);
 
-        match Workspace_manager.retrieve_Workspace("random-Workspace-id".to_string()) {
+        match workspace_manager.retrieve_workspace("random-Workspace-id".to_string()) {
             
             Ok(v) => panic!("{:?}", v),
 
@@ -305,23 +305,23 @@ mod test {
     }
 
     #[test]
-    fn should_retrieve_Workspace() {
+    fn should_retrieve_workspace() {
 
         let mut store: StoreManger<Workspace, String> = StoreManger::new();
 
         let mut retrieve_operator_mock: MockRetrieveFromStore<Workspace, String> = MockRetrieveFromStore::new();
 
-        retrieve_operator_mock.expect_retrieve().return_once(|key| Ok(Some(Workspace::new("a".to_string()))));
+        retrieve_operator_mock.expect_retrieve().return_once(|_| Ok(Some(Workspace::new("a".to_string()))));
 
         store.set_retrieve_operator(Box::new(retrieve_operator_mock));
 
-        let Workspace_manager = WorkspaceManager::new(&store);
+        let workspace_manager = WorkspaceManager::new(&store);
 
-        match Workspace_manager.retrieve_Workspace("random-Workspace-id".to_string()) {
+        match workspace_manager.retrieve_workspace("random-Workspace-id".to_string()) {
             
-            Ok(Workspace) => {
+            Ok(workspace) => {
 
-                info!("retreved Workspace {:?} ", Workspace);
+                info!("retreved Workspace {:?} ", workspace);
 
             },
 
@@ -338,29 +338,29 @@ mod test {
 
 
     #[test]
-    fn should_update_Workspace() {
+    fn should_update_workspace() {
 
         let mut store: StoreManger<Workspace, String> = StoreManger::new();
 
         let mut retrieve_operator_mock: MockRetrieveFromStore<Workspace, String> = MockRetrieveFromStore::new();
 
-        retrieve_operator_mock.expect_retrieve().return_once(|key| Ok(Some(Workspace::new("name".to_string()))));
+        retrieve_operator_mock.expect_retrieve().return_once(|_| Ok(Some(Workspace::new("name".to_string()))));
 
         store.set_retrieve_operator(Box::new(retrieve_operator_mock));
 
         let mut update_operator: MockUpdateInStore<Workspace, String> = MockUpdateInStore::new();
 
-        update_operator.expect_update().return_once(|Workspace| Ok(Workspace));
+        update_operator.expect_update().return_once(|workspace| Ok(workspace));
 
         store.set_update_operator(Box::new(update_operator));
 
-        let Workspace_manager = WorkspaceManager::new(&store);
+        let workspace_manager = WorkspaceManager::new(&store);
 
-        match Workspace_manager.update_Workspace(Workspace::new("test".to_string())) {
+        match workspace_manager.update_workspace(Workspace::new("test".to_string())) {
             
-            Ok(Workspace) => {
+            Ok(workspace) => {
 
-                info!("updated Workspace {:?} ", Workspace);
+                info!("updated Workspace {:?} ", workspace);
 
             },
 
@@ -376,19 +376,19 @@ mod test {
     }
 
     #[test]
-    fn should_throw_error_deleting_Workspace() {
+    fn should_throw_error_deleting_workspace() {
 
         let mut store: StoreManger<Workspace, String> = StoreManger::new();
 
         let mut delete_operator_mock: MockRemoveFromStore<String> = MockRemoveFromStore::new();
 
-        delete_operator_mock.expect_delete().return_once(|key| Ok(false));
+        delete_operator_mock.expect_delete().return_once(|_| Ok(false));
 
         store.set_delete_operator(Box::new(delete_operator_mock));
 
-        let Workspace_manager = WorkspaceManager::new(&store);
+        let workspace_manager = WorkspaceManager::new(&store);
 
-        match Workspace_manager.delete_Workspace("random-Workspace-id".to_string()) {
+        match workspace_manager.delete_workspace("random-Workspace-id".to_string()) {
             
             Ok(_) => {
 
@@ -408,21 +408,21 @@ mod test {
     }
 
     #[test]
-    fn should_delete_Workspace() {
+    fn should_delete_workspace() {
 
         let mut store: StoreManger<Workspace, String> = StoreManger::new();
 
         let mut delete_operator_mock: MockRemoveFromStore<String> = MockRemoveFromStore::new();
 
-        delete_operator_mock.expect_delete().return_once(|key| Ok(true));
+        delete_operator_mock.expect_delete().return_once(|_| Ok(true));
 
         store.set_delete_operator(Box::new(delete_operator_mock));
 
-        let Workspace_manager = WorkspaceManager::new(&store);
+        let workspace_manager = WorkspaceManager::new(&store);
 
-        match Workspace_manager.delete_Workspace("random-Workspace-id".to_string()) {
+        match workspace_manager.delete_workspace("random-Workspace-id".to_string()) {
             
-            Ok(Workspace) => {
+            Ok(_) => {
 
                 info!("successfully deleted Workspace");
 
