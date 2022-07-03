@@ -1,0 +1,59 @@
+# sample deployment configuration
+
+global:
+  environment_variables:
+      domain_name: "Domain Name"
+
+
+pipelines:
+
+  - name: "uat_deployment"
+    status: "active" # disabled
+    
+    environment_variables:
+      domain_name: "{secret::repo::domain_name}"
+
+    down_stream: ["deploy::project", "job::pipeline_2"]
+
+    inherit_pipeline:
+
+      - name: "scp"
+        
+        configurations:
+          root_mode: false
+          root_password: ""
+        
+        environment_variables:
+          MVN_PATH: ""
+
+    steps:
+
+        - name: "Copy File"
+
+          executor: "shell"
+          
+          description: ""
+          
+          environment_variables:
+            domain_name: "over_ride domain Name"
+            database_url: "{secret::org::database_url}"
+
+          commands:
+            - "npm run test"
+
+          downstream: ["Restart Service"]
+
+        - name: "Restart Service"
+
+          executor: "shell"
+          
+          description: ""
+          
+          environment_variables:
+            domain_name: "over_ride domain Name"
+            database_url: "{secret::org::database_url}"
+
+          commands:
+            - "npm run test"
+
+          downstream: ["Restart Service"]        
