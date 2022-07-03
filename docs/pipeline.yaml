@@ -1,0 +1,61 @@
+# Sample PipeLine Configuration
+
+global:
+  environment_variables:
+      domain_name: "Domain Name"
+
+
+pipelines:
+
+  - name: "pipeline_name"
+    status: "active" # disabled
+    
+    environment_variables:
+      domain_name: "{secret::repo::domain_name}"
+
+    down_stream: ["deploy::project", "job::pipeline_2"]
+
+    inherit_pipeline:
+
+      - name: "node_pipeline"
+        
+        configurations:
+          JDK: ""
+        
+        environment_variables:
+          MVN_PATH: ""
+      
+      - name: "maven_pipeline"
+        
+        configurations:
+          JDK: ""
+        
+        environment_variables:
+          MVN_PATH: ""
+
+
+    steps:
+
+        - name: "Run Test"
+
+          executor: "shell"
+          
+          description: ""
+          
+          environment_variables:
+            domain_name: "over_ride domain Name"
+            database_url: "{secret::org::database_url}"
+
+          commands:
+            - "npm run test"
+            - "npm run Build"
+
+          downstream:
+            - ""
+
+          trigger:
+            
+            pull_request:
+              - "main <= development"
+
+        
