@@ -19,7 +19,6 @@ mod workspace_manager;
 
 mod build_orchestrator;
 
-mod pipeline;
 
 // project information
 // workspace configuration

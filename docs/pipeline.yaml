@@ -1,4 +1,7 @@
 # Sample PipeLine Configuration
+job: "build_uat"
+
+version: 1
 
 global:
   environment_variables:
@@ -10,8 +13,8 @@ pipelines:
   - name: "pipeline_name"
     status: "active" # disabled
     
-    environment_variables:
-      domain_name: "{secret::repo::domain_name}"
+    # environment_variables:
+    #   domain_name: "{secret::repo::domain_name}"
 
     down_stream: ["deploy::project", "job::pipeline_2"]
 
