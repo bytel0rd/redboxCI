@@ -1,0 +1,5 @@
+rd_enabled = true
+fleet_id = "553e6b7f-74d1-4142-b188-42efa0d0f0be"
+
+[build]
+sccache = "C:\\Users\\precilla\\.cargo\\bin\\sccache.exe"
