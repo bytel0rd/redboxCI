@@ -1,12 +1,13 @@
-use std::error::Error;
 use core::fmt::Debug;
+
+use super::errors;
 
 
 pub trait SourceControlCFG {
     
     fn get_source_control_name(&self) -> String;
 
-    fn clone(&self) -> Result<(), Box<dyn Error>>;
+    fn clone_source(&self) -> Result<(), Box<dyn errors::EngineError>>;
 
     fn get_pipeline(&self) -> ();
 
